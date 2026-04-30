@@ -13,6 +13,7 @@ import { Plus, Pencil, Trash2, Search, Package, Images, AlertTriangle } from 'lu
 import { toast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { ProductImageManager } from '@/components/admin/ProductImageManager';
+import { z } from 'zod';
 
 type VariantWithImages = Pick<Tables<'product_variants'>, 'id' | 'price' | 'stock_quantity' | 'color' | 'size' | 'sku' | 'low_stock_threshold'> & {
   product_images: Pick<Tables<'product_images'>, 'id' | 'image_url' | 'is_primary' | 'display_order' | 'variant_id' | 'alt_text'>[];
@@ -25,6 +26,20 @@ type Product = Tables<'products'> & {
 const emptyForm = {
   name: '', slug: '', short_description: '', description: '', fabric_type: '', care_instructions: '', is_active: true, is_featured: false,
 };
+
+const productSchema = z.object({
+  name: z.string().trim().min(2, 'Product name must be at least 2 characters'),
+  slug: z.string()
+    .trim()
+    .min(2, 'Slug must be at least 2 characters')
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug can only contain lowercase letters, numbers and hyphens'),
+  short_description: z.string().max(180, 'Short description should be 180 characters or less').optional(),
+  description: z.string().max(5000, 'Description is too long').optional(),
+  fabric_type: z.string().max(120, 'Fabric type is too long').optional(),
+  care_instructions: z.string().max(200, 'Care instructions is too long').optional(),
+  is_active: z.boolean(),
+  is_featured: z.boolean(),
+});
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -60,9 +75,58 @@ export default function AdminProducts() {
   };
 
   const handleSave = async () => {
-    if (!form.name || !form.slug) { toast({ title: 'Name and slug are required', variant: 'destructive' }); return; }
+    const normalizedSlug = form.slug.toLowerCase().trim().replace(/\s+/g, '-').replace(/-+/g, '-');
+    const parsed = productSchema.safeParse({
+      ...form,
+      slug: normalizedSlug,
+      name: form.name.trim(),
+      short_description: form.short_description?.trim() || undefined,
+      description: form.description?.trim() || undefined,
+      fabric_type: form.fabric_type?.trim() || undefined,
+      care_instructions: form.care_instructions?.trim() || undefined,
+    });
+
+    if (!parsed.success) {
+      toast({
+        title: 'Validation failed',
+        description: parsed.error.issues[0]?.message ?? 'Please review your product details',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     setSaving(true);
-    const payload = { name: form.name, slug: form.slug.toLowerCase().replace(/\s+/g, '-'), short_description: form.short_description || null, description: form.description || null, fabric_type: form.fabric_type || null, care_instructions: form.care_instructions || null, is_active: form.is_active, is_featured: form.is_featured };
+    const slugQuery = supabase
+      .from('products')
+      .select('id')
+      .eq('slug', parsed.data.slug)
+      .limit(1);
+    const { data: existingSlug, error: slugCheckError } = editing
+      ? await slugQuery.neq('id', editing.id)
+      : await slugQuery;
+
+    if (slugCheckError) {
+      toast({ title: 'Could not verify slug uniqueness', description: slugCheckError.message, variant: 'destructive' });
+      setSaving(false);
+      return;
+    }
+
+    if (existingSlug && existingSlug.length > 0) {
+      toast({ title: 'Slug already exists', description: 'Please use a different slug for this product.', variant: 'destructive' });
+      setSaving(false);
+      return;
+    }
+
+    const payload = {
+      name: parsed.data.name,
+      slug: parsed.data.slug,
+      short_description: parsed.data.short_description || null,
+      description: parsed.data.description || null,
+      fabric_type: parsed.data.fabric_type || null,
+      care_instructions: parsed.data.care_instructions || null,
+      is_active: parsed.data.is_active,
+      is_featured: parsed.data.is_featured
+    };
 
     if (editing) {
       const { error } = await supabase.from('products').update(payload).eq('id', editing.id);
