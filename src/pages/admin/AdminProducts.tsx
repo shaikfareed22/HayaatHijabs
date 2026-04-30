@@ -41,6 +41,15 @@ const productSchema = z.object({
   is_featured: z.boolean(),
 });
 
+const normalizeSlug = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,7 +84,9 @@ export default function AdminProducts() {
   };
 
   const handleSave = async () => {
-    const normalizedSlug = form.slug.toLowerCase().trim().replace(/\s+/g, '-').replace(/-+/g, '-');
+    if (saving) return;
+
+    const normalizedSlug = normalizeSlug(form.slug);
     const parsed = productSchema.safeParse({
       ...form,
       slug: normalizedSlug,
@@ -96,48 +107,49 @@ export default function AdminProducts() {
     }
 
     setSaving(true);
-    const slugQuery = supabase
-      .from('products')
-      .select('id')
-      .eq('slug', parsed.data.slug)
-      .limit(1);
-    const { data: existingSlug, error: slugCheckError } = editing
-      ? await slugQuery.neq('id', editing.id)
-      : await slugQuery;
+    try {
+      const slugQuery = supabase
+        .from('products')
+        .select('id')
+        .eq('slug', parsed.data.slug)
+        .limit(1);
+      const { data: existingSlug, error: slugCheckError } = editing
+        ? await slugQuery.neq('id', editing.id)
+        : await slugQuery;
 
-    if (slugCheckError) {
-      toast({ title: 'Could not verify slug uniqueness', description: slugCheckError.message, variant: 'destructive' });
+      if (slugCheckError) {
+        toast({ title: 'Could not verify slug uniqueness', description: slugCheckError.message, variant: 'destructive' });
+        return;
+      }
+
+      if (existingSlug && existingSlug.length > 0) {
+        toast({ title: 'Slug already exists', description: 'Please use a different slug for this product.', variant: 'destructive' });
+        return;
+      }
+
+      const payload = {
+        name: parsed.data.name,
+        slug: parsed.data.slug,
+        short_description: parsed.data.short_description || null,
+        description: parsed.data.description || null,
+        fabric_type: parsed.data.fabric_type || null,
+        care_instructions: parsed.data.care_instructions || null,
+        is_active: parsed.data.is_active,
+        is_featured: parsed.data.is_featured
+      };
+
+      if (editing) {
+        const { error } = await supabase.from('products').update(payload).eq('id', editing.id);
+        if (error) toast({ title: 'Failed to update product', description: error.message, variant: 'destructive' });
+        else { toast({ title: 'Product updated!' }); setDialogOpen(false); fetchProducts(); }
+      } else {
+        const { error } = await supabase.from('products').insert(payload);
+        if (error) toast({ title: 'Failed to create product', description: error.message, variant: 'destructive' });
+        else { toast({ title: 'Product created!' }); setDialogOpen(false); fetchProducts(); }
+      }
+    } finally {
       setSaving(false);
-      return;
     }
-
-    if (existingSlug && existingSlug.length > 0) {
-      toast({ title: 'Slug already exists', description: 'Please use a different slug for this product.', variant: 'destructive' });
-      setSaving(false);
-      return;
-    }
-
-    const payload = {
-      name: parsed.data.name,
-      slug: parsed.data.slug,
-      short_description: parsed.data.short_description || null,
-      description: parsed.data.description || null,
-      fabric_type: parsed.data.fabric_type || null,
-      care_instructions: parsed.data.care_instructions || null,
-      is_active: parsed.data.is_active,
-      is_featured: parsed.data.is_featured
-    };
-
-    if (editing) {
-      const { error } = await supabase.from('products').update(payload).eq('id', editing.id);
-      if (error) toast({ title: 'Failed to update product', description: error.message, variant: 'destructive' });
-      else { toast({ title: 'Product updated!' }); setDialogOpen(false); fetchProducts(); }
-    } else {
-      const { error } = await supabase.from('products').insert(payload);
-      if (error) toast({ title: 'Failed to create product', description: error.message, variant: 'destructive' });
-      else { toast({ title: 'Product created!' }); setDialogOpen(false); fetchProducts(); }
-    }
-    setSaving(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -293,7 +305,7 @@ export default function AdminProducts() {
           <DialogHeader><DialogTitle className="font-luxury">{editing ? 'Edit Product' : 'Add Product'}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-4">
-              <div><Label>Name *</Label><Input value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') }))} placeholder="Elegant Hijab" /></div>
+              <div><Label>Name *</Label><Input value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value, slug: normalizeSlug(e.target.value) }))} placeholder="Elegant Hijab" /></div>
               <div><Label>Slug *</Label><Input value={form.slug} onChange={(e) => setForm(f => ({ ...f, slug: e.target.value }))} placeholder="elegant-hijab" /></div>
             </div>
             <div><Label>Short Description</Label><Input value={form.short_description} onChange={(e) => setForm(f => ({ ...f, short_description: e.target.value }))} placeholder="Brief product description" /></div>
