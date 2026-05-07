@@ -26,122 +26,84 @@ export interface ProductListResponse {
   meta: ProductMeta;
 }
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
+
 export const productService = {
-  /** GET /products — list with filters */
   async list(filters: ProductFilters = {}): Promise<ProductListResponse> {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([k, v]) => {
       if (v !== undefined && v !== null && v !== "") params.set(k, String(v));
     });
 
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
     const res = await fetch(
-      `${supabaseUrl}/functions/v1/products?${params.toString()}`,
+      `${SUPABASE_URL}/functions/v1/products?${params.toString()}`,
       {
         headers: {
-          apikey: anonKey,
-          "Content-Type": "application/json",
+          'Authorization': `Bearer ${ANON_KEY}`,
+          'apikey': ANON_KEY,
+          'Content-Type': 'application/json',
         },
       }
     );
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: 'Failed to fetch products' }));
-      throw new Error(err.error || "Failed to fetch products");
+      const err = await res.json().catch(() => ({ error: 'Network error' }));
+      throw new Error(err.error || `HTTP ${res.status}`);
     }
 
     return res.json();
   },
 
-  /** GET /products/:id — single product */
-  async getById(id: string) {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-    const session = (await supabase.auth.getSession()).data.session;
-
+  async get(slug: string): Promise<any> {
     const res = await fetch(
-      `${supabaseUrl}/functions/v1/products/${id}`,
+      `${SUPABASE_URL}/functions/v1/products?slug=${slug}`,
       {
         headers: {
-          apikey: anonKey,
-          "Content-Type": "application/json",
-          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+          'Authorization': `Bearer ${ANON_KEY}`,
+          'apikey': ANON_KEY,
+          'Content-Type': 'application/json',
         },
       }
     );
 
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || "Product not found");
+      const err = await res.json().catch(() => ({ error: 'Network error' }));
+      throw new Error(err.error || `HTTP ${res.status}`);
     }
 
-    const json = await res.json();
-    return json.data;
+    const data = await res.json();
+    return data.data?.[0] || null;
   },
 
-  /** POST /products — create */
-  async create(productData: any) {
-    const { data, error } = await supabase.functions.invoke("products", {
-      method: "POST",
-      body: productData,
-    });
+  async getCollections(): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('collections')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order');
     if (error) throw error;
-    return data?.data;
+    return data || [];
   },
 
-  /** PUT /products/:id — update */
-  async update(id: string, productData: any) {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-    const session = (await supabase.auth.getSession()).data.session;
-
-    const res = await fetch(
-      `${supabaseUrl}/functions/v1/products/${id}`,
-      {
-        method: "PUT",
-        headers: {
-          apikey: anonKey,
-          "Content-Type": "application/json",
-          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
-        },
-        body: JSON.stringify(productData),
-      }
-    );
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || "Failed to update product");
-    }
-
-    const json = await res.json();
-    return json.data;
+  async getCollectionBySlug(slug: string): Promise<any> {
+    const { data, error } = await supabase
+      .from('collections')
+      .select('*, product_collections(*, products(*, product_variants(*, product_images(*))))')
+      .eq('slug', slug)
+      .eq('is_active', true)
+      .single();
+    if (error) throw error;
+    return data;
   },
 
-  /** DELETE /products/:id — soft delete */
-  async delete(id: string) {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-    const session = (await supabase.auth.getSession()).data.session;
-
-    const res = await fetch(
-      `${supabaseUrl}/functions/v1/products/${id}`,
-      {
-        method: "DELETE",
-        headers: {
-          apikey: anonKey,
-          "Content-Type": "application/json",
-          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
-        },
-      }
-    );
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || "Failed to delete product");
-    }
-
-    return res.json();
+  async getCategories(): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order');
+    if (error) throw error;
+    return data || [];
   },
 };

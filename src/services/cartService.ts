@@ -50,23 +50,26 @@ export interface RemoveFromCartRequest {
   cart_item_id: string;
 }
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
 class CartService {
-  private async makeRequest<T>(
-    method: string,
-    body?: any
-  ): Promise<T> {
+  private async getToken(): Promise<string> {
     const { data: session } = await supabase.auth.getSession();
-    
     if (!session?.session?.access_token) {
       throw new Error('User must be authenticated to access cart');
     }
+    return session.session.access_token;
+  }
+
+  private async makeRequest<T>(method: string, body?: any): Promise<T> {
+    const token = await this.getToken();
 
     const response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/cart`,
+      `${SUPABASE_URL}/functions/v1/cart`,
       {
         method,
         headers: {
-          'Authorization': `Bearer ${session.session.access_token}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: body ? JSON.stringify(body) : undefined,
@@ -86,15 +89,28 @@ class CartService {
   }
 
   async addToCart(request: AddToCartRequest): Promise<{ data: any; message: string }> {
-    return this.makeRequest('POST', request);
+    return this.makeRequest('POST', {
+      product_id: request.product_id,
+      variant_id: request.variant_id,
+      quantity: request.quantity || 1,
+    });
   }
 
   async updateCartItem(request: UpdateCartItemRequest): Promise<{ data: any; message: string }> {
-    return this.makeRequest('PUT', request);
+    // If quantity is 0 or less, remove instead
+    if (request.quantity <= 0) {
+      return this.removeFromCart({ cart_item_id: request.cart_item_id });
+    }
+    return this.makeRequest('PUT', {
+      cart_item_id: request.cart_item_id,
+      quantity: request.quantity,
+    });
   }
 
   async removeFromCart(request: RemoveFromCartRequest): Promise<{ data: any; message: string }> {
-    return this.makeRequest('DELETE', request);
+    return this.makeRequest('DELETE', {
+      cart_item_id: request.cart_item_id,
+    });
   }
 }
 
