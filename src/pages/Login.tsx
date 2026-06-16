@@ -1,28 +1,26 @@
 import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { lovable } from '@/integrations/lovable/index';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const { signIn, user, profile } = useAuth();
+  const { signIn, user } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Get the redirect path from location state, default to home page for shopping
-  const from = location.state?.from?.pathname || '/#featured';
+  const from = location.state?.from?.pathname || '/';
 
-  // Redirect if already logged in
   if (user) {
     return <Navigate to={from} replace />;
   }
@@ -30,22 +28,32 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
       await signIn(email, password);
-      toast({
-        title: 'Welcome back!',
-        description: 'You have been signed in successfully.',
-      });
-      // Navigate to the intended destination
+      toast({ title: 'Welcome back!', description: 'You have been signed in successfully.' });
       navigate(from, { replace: true });
     } catch (error: any) {
-      toast({
-        title: 'Sign In Failed',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Sign In Failed', description: error.message, variant: 'destructive' });
     } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'https://hayaat-hijabs.vercel.app/',
+        },
+      });
+      if (error) {
+        toast({ title: 'Google Sign In Failed', description: error.message, variant: 'destructive' });
+        setIsLoading(false);
+      }
+    } catch (error: any) {
+      toast({ title: 'Google Sign In Failed', description: error.message, variant: 'destructive' });
       setIsLoading(false);
     }
   };
@@ -55,44 +63,21 @@ export default function Login() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-luxury">Sign In</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Welcome back to Hayaat Hijabs
-          </p>
+          <p className="text-sm text-muted-foreground">Welcome back to Hayaat Hijabs</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isLoading}
-              />
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading} />
             </div>
-            
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <Link 
-                  to="/reset-password" 
-                  className="text-sm text-primary hover:underline"
-                >
-                  Forgot password?
-                </Link>
+                <Link to="/reset-password" className="text-sm text-primary hover:underline">Forgot password?</Link>
               </div>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={isLoading}
-              />
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isLoading} />
             </div>
-
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? 'Signing In...' : 'Login'}
             </Button>
@@ -107,35 +92,7 @@ export default function Login() {
             </div>
           </div>
 
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            disabled={isLoading}
-            onClick={async () => {
-              setIsLoading(true);
-              try {
-                const result = await lovable.auth.signInWithOAuth("google", {
-                  redirect_uri: window.location.origin,
-                });
-                if (result?.error) {
-                  toast({
-                    title: 'Google Sign In Failed',
-                    description: result.error.message,
-                    variant: 'destructive',
-                  });
-                }
-              } catch (error: any) {
-                toast({
-                  title: 'Google Sign In Failed',
-                  description: error.message,
-                  variant: 'destructive',
-                });
-              } finally {
-                setIsLoading(false);
-              }
-            }}
-          >
+          <Button type="button" variant="outline" className="w-full" disabled={isLoading} onClick={handleGoogleSignIn}>
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -148,11 +105,7 @@ export default function Login() {
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               Don't have an account?{' '}
-              <Link 
-                to="/signup" 
-                state={{ from: location.state?.from }}
-                className="text-primary hover:underline font-medium"
-              >
+              <Link to="/signup" state={{ from: location.state?.from }} className="text-primary hover:underline font-medium">
                 Create Account
               </Link>
             </p>
