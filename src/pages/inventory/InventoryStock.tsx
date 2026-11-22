@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Boxes, Download, Plus, Search } from 'lucide-react';
+import { Boxes, Download, Plus, Printer, Search } from 'lucide-react';
+import { LabelCopies, printBarcodeLabels } from '@/lib/barcodeLabels';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +25,7 @@ export default function InventoryStock() {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<StatusFilter>('all');
   const [adjusting, setAdjusting] = useState<InventoryItem | null>(null);
+  const [copies, setCopies] = useState<LabelCopies>('one');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -65,6 +67,18 @@ export default function InventoryStock() {
       ]),
     );
 
+  // Prints labels for the rows currently shown (search/filter first to print fewer).
+  const printLabels = () => {
+    const printed = printBarcodeLabels(rows, copies);
+    if (printed === 0) {
+      toast({
+        title: 'Nothing to print',
+        description: copies === 'stock' ? 'None of the items shown have stock. Choose "1 label per item" instead.' : 'No items shown.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -74,7 +88,17 @@ export default function InventoryStock() {
             One row per colour and size. The website, online orders and in-store sales all use these numbers.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Select value={copies} onValueChange={(v) => setCopies(v as LabelCopies)}>
+            <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="one">1 label per item</SelectItem>
+              <SelectItem value="stock">1 label per unit in stock</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline" onClick={printLabels} disabled={rows.length === 0} title="Prints labels for the items shown below">
+            <Printer className="w-4 h-4 mr-2" /> Print barcodes ({copies === 'stock' ? rows.reduce((n, i) => n + Math.max(0, i.stock), 0) : rows.length})
+          </Button>
           <Button variant="outline" onClick={exportCsv} disabled={rows.length === 0}>
             <Download className="w-4 h-4 mr-2" /> Export CSV
           </Button>

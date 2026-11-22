@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { DailySalesChart } from '@/components/admin/DailySalesChart';
 import { ShoppingCart, Package, Users, TrendingUp, ArrowUp, Clock, AlertTriangle } from 'lucide-react';
 
 interface LowStockVariant {
@@ -109,6 +110,8 @@ export default function Dashboard() {
           </Card>
         ))}
       </div>
+
+      <DailySalesChart title="Daily sales (website + store)" />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Orders */}

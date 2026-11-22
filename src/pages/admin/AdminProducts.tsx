@@ -10,10 +10,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Pencil, Trash2, Search, Package, Images, AlertTriangle, Upload, X, Check } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Package, Images, AlertTriangle, Upload, X, Check, Grid3x3 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { ProductImageManager } from '@/components/admin/ProductImageManager';
+import { VariantGenerator } from '@/components/inventory/VariantGenerator';
 
 type VariantWithImages = Pick<Tables<'product_variants'>, 'id' | 'price' | 'compare_at_price' | 'stock_quantity' | 'color' | 'size' | 'sku' | 'low_stock_threshold' | 'is_active'> & {
   product_images: Pick<Tables<'product_images'>, 'id' | 'image_url' | 'is_primary' | 'display_order' | 'variant_id' | 'alt_text'>[];
@@ -51,6 +52,7 @@ export default function AdminProducts() {
   const [editing, setEditing] = useState<Product | null>(null);
   const [editingVariant, setEditingVariant] = useState<VariantWithImages | null>(null);
   const [imageProduct, setImageProduct] = useState<{ id: string; name: string } | null>(null);
+  const [generatorProduct, setGeneratorProduct] = useState<Product | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [variantForm, setVariantForm] = useState(emptyVariant);
   const [saving, setSaving] = useState(false);
@@ -346,6 +348,9 @@ export default function AdminProducts() {
                         {lowestPrice != null && <p className="text-sm font-semibold text-primary">{formatPrice(lowestPrice)}</p>}
                       </div>
                       <div className="flex items-center gap-1 flex-shrink-0">
+                        <Button size="sm" onClick={() => setGeneratorProduct(product)} className="hidden sm:flex items-center gap-1" title="Create every colour x size with SKUs automatically">
+                          <Grid3x3 className="w-3 h-3" /> Colours & sizes
+                        </Button>
                         <Button variant="outline" size="sm" onClick={() => openAddVariant(product)} className="hidden sm:flex items-center gap-1">
                           <Plus className="w-3 h-3" /> Variant
                         </Button>
@@ -415,9 +420,14 @@ export default function AdminProducts() {
                             </div>
                           </div>
                         ))}
-                        <Button variant="ghost" size="sm" onClick={() => openAddVariant(product)} className="text-xs text-muted-foreground hover:text-foreground">
-                          <Plus className="w-3 h-3 mr-1" /> Add Variant
-                        </Button>
+                        <div className="flex flex-wrap gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => setGeneratorProduct(product)} className="text-xs text-muted-foreground hover:text-foreground">
+                            <Grid3x3 className="w-3 h-3 mr-1" /> Add colours & sizes
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => openAddVariant(product)} className="text-xs text-muted-foreground hover:text-foreground">
+                            <Plus className="w-3 h-3 mr-1" /> Add one variant
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -642,6 +652,9 @@ export default function AdminProducts() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Colours x sizes generator */}
+      <VariantGenerator product={generatorProduct} onClose={() => setGeneratorProduct(null)} onSaved={fetchProducts} />
 
       {/* Image Manager */}
       {imageProduct && (

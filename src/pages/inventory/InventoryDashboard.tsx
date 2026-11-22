@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
+import { DailySalesChart } from '@/components/admin/DailySalesChart';
 import {
   InventoryItem, MOVEMENT_REASON_LABEL, STOCK_STATUS_CLASS, STOCK_STATUS_LABEL, errorMessage, fetchInventoryItems,
   formatINR, optionLabel, stockStatus,
@@ -115,6 +116,8 @@ export default function InventoryDashboard() {
           </Card>
         ))}
       </div>
+
+      <DailySalesChart title="Daily sales (online + in-store)" />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
