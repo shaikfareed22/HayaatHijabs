@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { siteUrl } from '@/lib/siteUrls';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
@@ -15,7 +16,8 @@ export default function Signup() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [confirmationSentTo, setConfirmationSentTo] = useState<string | null>(null);
+
   const { signUp, user } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
@@ -29,9 +31,17 @@ export default function Signup() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await signUp(email, password, firstName, lastName);
-      toast({ title: 'Account Created!', description: 'Welcome to Hayaat Hijabs!' });
-      navigate(from, { replace: true });
+      const result = await signUp(email, password, firstName, lastName, from);
+      if (result.alreadyRegistered) {
+        toast({ title: 'You already have an account', description: 'Please log in with this email instead.' });
+        navigate('/login', { replace: true, state: { from: location.state?.from } });
+      } else if (result.needsEmailConfirmation) {
+        // Not signed in yet: Supabase emailed a confirmation link first.
+        setConfirmationSentTo(email);
+      } else {
+        toast({ title: 'Account Created!', description: 'Welcome to Hayaat Hijabs!' });
+        navigate(from, { replace: true });
+      }
     } catch (error: any) {
       toast({ title: 'Sign Up Failed', description: error.message, variant: 'destructive' });
     } finally {
@@ -44,7 +54,7 @@ export default function Signup() {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: 'https://hayaat-hijabs.vercel.app/' },
+        options: { redirectTo: siteUrl(from) },
       });
       if (error) {
         toast({ title: 'Google Sign Up Failed', description: error.message, variant: 'destructive' });
@@ -55,6 +65,27 @@ export default function Signup() {
       setIsLoading(false);
     }
   };
+
+  if (confirmationSentTo) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-luxury">Confirm your email</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-muted-foreground">
+              We sent a confirmation link to <strong>{confirmationSentTo}</strong>. Open it to activate your account.
+            </p>
+            <p className="text-sm text-muted-foreground">Can't find it? Check your spam folder.</p>
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/login" state={{ from: location.state?.from }}>Go to Login</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">

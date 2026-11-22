@@ -8,12 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { siteUrl } from '@/lib/siteUrls';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [unconfirmed, setUnconfirmed] = useState(false);
+
   const { signIn, user } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
@@ -28,14 +30,39 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setUnconfirmed(false);
     try {
       await signIn(email, password);
       toast({ title: 'Welcome back!', description: 'You have been signed in successfully.' });
       navigate(from, { replace: true });
     } catch (error: any) {
-      toast({ title: 'Sign In Failed', description: error.message, variant: 'destructive' });
+      if (/email not confirmed/i.test(error?.message ?? '')) {
+        setUnconfirmed(true);
+        toast({
+          title: 'Please confirm your email',
+          description: 'Open the link we emailed you, then sign in. You can resend it below.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({ title: 'Sign In Failed', description: error.message, variant: 'destructive' });
+      }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    setIsLoading(true);
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: siteUrl(from) },
+    });
+    setIsLoading(false);
+    if (error) {
+      toast({ title: 'Could not resend email', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Confirmation email sent', description: `Check the inbox for ${email}.` });
     }
   };
 
@@ -45,7 +72,8 @@ export default function Login() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: 'https://hayaat-hijabs.vercel.app/',
+          // Come back to this site, on the page the shopper was heading to.
+          redirectTo: siteUrl(from),
         },
       });
       if (error) {
@@ -81,6 +109,11 @@ export default function Login() {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? 'Signing In...' : 'Login'}
             </Button>
+            {unconfirmed && (
+              <Button type="button" variant="outline" className="w-full" disabled={isLoading} onClick={handleResendConfirmation}>
+                Resend confirmation email
+              </Button>
+            )}
           </form>
 
           <div className="relative my-6">

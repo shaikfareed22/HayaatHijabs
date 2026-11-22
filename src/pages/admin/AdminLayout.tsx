@@ -6,15 +6,16 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { STORE_URL } from '@/lib/siteUrls';
 
 const navItems = [
-  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/admin/products', label: 'Products', icon: Package, end: false },
-  { to: '/admin/collections', label: 'Collections', icon: FolderOpen, end: false },
-  { to: '/admin/orders', label: 'Orders', icon: ShoppingCart, end: false },
-  { to: '/admin/coupons', label: 'Coupons', icon: Tag, end: false },
-  { to: '/admin/customers', label: 'Customers', icon: Users, end: false },
-  { to: '/admin/analytics', label: 'Analytics', icon: BarChart3, end: false },
+  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/products', label: 'Products', icon: Package, end: false },
+  { to: '/collections', label: 'Collections', icon: FolderOpen, end: false },
+  { to: '/orders', label: 'Orders', icon: ShoppingCart, end: false },
+  { to: '/coupons', label: 'Coupons', icon: Tag, end: false },
+  { to: '/customers', label: 'Customers', icon: Users, end: false },
+  { to: '/analytics', label: 'Analytics', icon: BarChart3, end: false },
 ];
 
 export default function AdminLayout() {
@@ -22,7 +23,7 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  const handleSignOut = async () => { await signOut(); navigate('/'); };
+  const handleSignOut = async () => { await signOut(); navigate('/login', { replace: true }); };
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -39,9 +40,11 @@ export default function AdminLayout() {
           ))}
         </nav>
         <div className="p-3 border-t border-sidebar-border space-y-2">
-          <NavLink to="/" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors">
-            <Store className="w-5 h-5 flex-shrink-0" />{sidebarOpen && <span>View Store</span>}
-          </NavLink>
+          {STORE_URL && (
+            <a href={STORE_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors">
+              <Store className="w-5 h-5 flex-shrink-0" />{sidebarOpen && <span>View Store</span>}
+            </a>
+          )}
           {sidebarOpen && (<div className="px-3 py-2 rounded-lg bg-sidebar-accent"><p className="text-xs font-medium text-sidebar-foreground truncate">{profile?.display_name || profile?.first_name || 'Admin'}</p><p className="text-xs text-muted-foreground truncate">{profile?.email}</p></div>)}
           <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors">
             <LogOut className="w-5 h-5 flex-shrink-0" />{sidebarOpen && <span>Sign Out</span>}

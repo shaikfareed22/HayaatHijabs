@@ -1,5 +1,12 @@
 # Welcome to your hayaat hijabs
 
+**Deploying:** see [docs/DEPLOY-CLOUDFLARE.md](docs/DEPLOY-CLOUDFLARE.md) — shop and admin portal on Cloudflare Pages, backend on Supabase.
+
+```sh
+npm run dev        # shop  -> http://localhost:8080
+npm run dev:admin  # admin -> http://localhost:8081
+```
+
 Follow these steps:
 
 ```sh

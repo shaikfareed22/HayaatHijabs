@@ -24,16 +24,6 @@ import Collections from "./pages/Collections";
 import CollectionDetail from "./pages/CollectionDetail";
 import Wishlist from "./pages/Wishlist";
 
-// Admin pages
-import AdminLayout from "./pages/admin/AdminLayout";
-import Dashboard from "./pages/admin/Dashboard";
-import AdminProducts from "./pages/admin/AdminProducts";
-import AdminCollections from "./pages/admin/AdminCollections";
-import AdminOrders from "./pages/admin/AdminOrders";
-import AdminCustomers from "./pages/admin/AdminCustomers";
-import AdminAnalytics from "./pages/admin/AdminAnalytics";
-import AdminCoupons from "./pages/admin/AdminCoupons";
-
 const queryClient = new QueryClient();
 
 // Layout wrapper for public pages
@@ -107,24 +97,7 @@ const App = () => (
                 }
               />
 
-              {/* Admin routes — full-screen layout (no Navbar/Footer) */}
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute requiredRole="admin">
-                    <AdminLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<Dashboard />} />
-                <Route path="products" element={<AdminProducts />} />
-                <Route path="collections" element={<AdminCollections />} />
-                <Route path="orders" element={<AdminOrders />} />
-                <Route path="coupons" element={<AdminCoupons />} />
-                <Route path="customers" element={<AdminCustomers />} />
-                <Route path="analytics" element={<AdminAnalytics />} />
-              </Route>
-
+              {/* The admin portal is a separate site: see src/admin/ */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </CartProvider>

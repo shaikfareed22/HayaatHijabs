@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { useCartContext } from "@/contexts/CartContext";
+import { ADMIN_URL } from "@/lib/siteUrls";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -41,7 +42,7 @@ const Navbar = () => {
     }
   };
 
-  const isAdmin = profile?.role === 'admin';
+  const isAdmin = profile?.role === 'admin' && !!ADMIN_URL;
   const { cartItemCount } = useCartContext();
 
   return (
@@ -103,13 +104,13 @@ const Navbar = () => {
             {user ? (
               <>
                 {isAdmin && (
-                  <Link
-                    to="/admin"
+                  <a
+                    href={ADMIN_URL}
                     className="p-2 hover:text-foreground text-muted-foreground transition-colors hidden sm:block"
                     title="Admin Dashboard"
                   >
                     <Shield className="h-5 w-5" />
-                  </Link>
+                  </a>
                 )}
                 <Link
                   to="/account"
@@ -190,13 +191,13 @@ const Navbar = () => {
                 {user ? (
                   <>
                     {isAdmin && (
-                      <Link 
-                        to="/admin" 
+                      <a 
+                        href={ADMIN_URL} 
                         onClick={() => setIsMenuOpen(false)} 
                         className="flex items-center gap-2 py-3 px-4 text-sm text-muted-foreground hover:bg-muted rounded-lg"
                       >
                         <Shield className="h-4 w-4" /> Admin Dashboard
-                      </Link>
+                      </a>
                     )}
                     <Link 
                       to="/account" 

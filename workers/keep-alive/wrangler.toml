@@ -1,0 +1,15 @@
+name = "hayaat-supabase-keep-alive"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# Every day at 06:00 UTC (11:30 India time).
+[triggers]
+crons = ["0 6 * * *"]
+
+[vars]
+# Replace with your Supabase project URL (Supabase > Project Settings > API).
+SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co"
+
+# SUPABASE_KEY is set as a secret, not here:
+#   npx wrangler secret put SUPABASE_KEY
+# (or in the dashboard: Worker > Settings > Variables and Secrets)

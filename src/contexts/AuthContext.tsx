@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
+import { siteUrl } from '@/lib/siteUrls';
 
 type UserProfile = Tables<'user_profiles'>;
 
@@ -10,7 +11,13 @@ interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   loading: boolean;
-  signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
+  signUp: (
+    email: string,
+    password: string,
+    firstName?: string,
+    lastName?: string,
+    redirectPath?: string,
+  ) => Promise<{ needsEmailConfirmation: boolean; alreadyRegistered: boolean }>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -32,18 +39,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const profileCache = useRef<Record<string, UserProfile>>({});
-  const fetchingRef = useRef(false);
+  const inFlight = useRef<Record<string, Promise<UserProfile | null>>>({});
 
-  const fetchProfile = async (userId: string, userEmail?: string): Promise<UserProfile | null> => {
-    // Return cached profile immediately
-    if (profileCache.current[userId]) {
-      return profileCache.current[userId];
-    }
-
-    // Prevent duplicate fetches
-    if (fetchingRef.current) return null;
-    fetchingRef.current = true;
-
+  const loadProfile = useCallback(async (userId: string, userEmail?: string): Promise<UserProfile | null> => {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
@@ -58,7 +56,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           .insert({
             user_id: userId,
             email: userEmail || '',
-            role: userEmail === 'shaikfareed2203@gmail.com' ? 'admin' : 'customer',
+            // Roles are only granted in the database, never from the browser.
+            role: 'customer',
           })
           .select('*')
           .single();
@@ -80,10 +79,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return null;
     } catch (err) {
       return null;
-    } finally {
-      fetchingRef.current = false;
     }
-  };
+  }, []);
+
+  // One request per user at a time; everyone asking at once gets the same answer
+  // (previously a second caller got null, which could leave the profile empty).
+  const fetchProfile = useCallback((userId: string, userEmail?: string): Promise<UserProfile | null> => {
+    if (profileCache.current[userId]) return Promise.resolve(profileCache.current[userId]);
+    if (!inFlight.current[userId]) {
+      inFlight.current[userId] = loadProfile(userId, userEmail).finally(() => {
+        delete inFlight.current[userId];
+      });
+    }
+    return inFlight.current[userId];
+  }, [loadProfile]);
 
   useEffect(() => {
     let mounted = true;
@@ -146,15 +155,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchProfile]);
 
-  const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
-    const { error } = await supabase.auth.signUp({
+  const signUp = async (
+    email: string,
+    password: string,
+    firstName?: string,
+    lastName?: string,
+    redirectPath = '/',
+  ) => {
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { first_name: firstName, last_name: lastName } },
+      options: {
+        data: { first_name: firstName, last_name: lastName },
+        // The confirmation email brings people back to this site, not to an old domain.
+        emailRedirectTo: siteUrl(redirectPath),
+      },
     });
     if (error) throw error;
+    return {
+      // No session yet means Supabase sent a confirmation email first.
+      needsEmailConfirmation: !data.session,
+      // For an email that is already registered, Supabase returns a user with no identities
+      // (instead of an error) so attackers can't probe which emails exist.
+      alreadyRegistered: !!data.user && (data.user.identities?.length ?? 0) === 0,
+    };
   };
 
   const signIn = async (email: string, password: string) => {
@@ -172,7 +198,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: siteUrl('/reset-password'),
     });
     if (error) throw error;
   };

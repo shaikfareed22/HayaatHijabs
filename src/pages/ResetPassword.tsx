@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,12 +8,23 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
-export default function ResetPassword() {
+interface ResetPasswordProps {
+  /** Where to go after the password is changed (store: /account, admin: /). */
+  successPath?: string;
+  loginPath?: string;
+}
+
+// Read the email link's details on first render, before Supabase tidies up the address bar.
+const readLinkHash = () => new URLSearchParams(window.location.hash.substring(1));
+
+export default function ResetPassword({ successPath = '/account', loginPath = '/login' }: ResetPasswordProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
+  const [isRecoveryMode, setIsRecoveryMode] = useState(() => readLinkHash().get('type') === 'recovery');
+  // Expired or already-used links come back with an error instead of a session.
+  const [linkError] = useState(() => readLinkHash().get('error_description'));
   const [resetSent, setResetSent] = useState(false);
   
   const { resetPassword, user } = useAuth();
@@ -41,7 +52,7 @@ export default function ResetPassword() {
 
   // Redirect if already logged in and not in recovery mode
   if (user && !isRecoveryMode) {
-    return <Navigate to="/account" replace />;
+    return <Navigate to={successPath} replace />;
   }
 
   const handleRequestReset = async (e: React.FormEvent) => {
@@ -92,7 +103,7 @@ export default function ResetPassword() {
         description: 'Your password has been updated successfully.',
       });
       
-      navigate('/account');
+      navigate(successPath, { replace: true });
     } catch (error: any) {
       toast({
         title: 'Update Failed',
@@ -142,6 +153,11 @@ export default function ResetPassword() {
           </p>
         </CardHeader>
         <CardContent>
+          {linkError && !isRecoveryMode && (
+            <p className="mb-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              This reset link is invalid or has expired. Enter your email to get a new one.
+            </p>
+          )}
           {isRecoveryMode ? (
             <form onSubmit={handleUpdatePassword} className="space-y-4">
               <div className="space-y-2">
@@ -198,9 +214,9 @@ export default function ResetPassword() {
             <div className="mt-4 text-center">
               <p className="text-sm text-muted-foreground">
                 Remember your password?{' '}
-                <a href="/login" className="text-primary hover:underline">
+                <Link to={loginPath} className="text-primary hover:underline">
                   Sign in
-                </a>
+                </Link>
               </p>
             </div>
           )}
