@@ -238,17 +238,32 @@ export default function AdminProducts() {
     setSavingVariant(false);
   };
 
-  const handleDeleteVariant = async (variantId: string) => {
-    const { error } = await supabase.from('product_variants').delete().eq('id', variantId);
-    if (error) toast({ title: 'Failed to delete variant', variant: 'destructive' });
-    else { toast({ title: 'Variant deleted' }); fetchProducts(); }
+  // Anything that appears in a past order can't be deleted: the database keeps it so order history
+  // stays complete (23502/23503 = the order_items link refuses to be removed). Hide it instead.
+  const isInPastOrders = (error: { code?: string }) => error.code === '23502' || error.code === '23503';
+
+  const deleteOrHide = async (table: 'products' | 'product_variants', id: string, label: string) => {
+    const { error } = await supabase.from(table).delete().eq('id', id);
+    if (!error) {
+      toast({ title: `${label} deleted` });
+    } else if (isInPastOrders(error)) {
+      const { error: hideError } = await supabase.from(table).update({ is_active: false }).eq('id', id);
+      if (hideError) {
+        toast({ title: `Failed to delete ${label.toLowerCase()}`, description: hideError.message, variant: 'destructive' });
+      } else {
+        toast({
+          title: 'Hidden from the shop instead',
+          description: `This ${label.toLowerCase()} is in past orders, so it was kept for order history and marked Inactive. Customers can no longer see or buy it.`,
+        });
+      }
+    } else {
+      toast({ title: `Failed to delete ${label.toLowerCase()}`, description: error.message, variant: 'destructive' });
+    }
+    fetchProducts();
   };
 
-  const handleDelete = async (id: string) => {
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) toast({ title: 'Failed to delete product', variant: 'destructive' });
-    else { toast({ title: 'Product deleted' }); fetchProducts(); }
-  };
+  const handleDeleteVariant = (variantId: string) => deleteOrHide('product_variants', variantId, 'Variant');
+  const handleDelete = (id: string) => deleteOrHide('products', id, 'Product');
 
   const filtered = useMemo(() => {
     let list = products.filter(p =>
@@ -349,7 +364,7 @@ export default function AdminProducts() {
                           <AlertDialogContent>
                             <AlertDialogHeader>
                               <AlertDialogTitle>Delete Product</AlertDialogTitle>
-                              <AlertDialogDescription>Delete "{product.name}"? This cannot be undone.</AlertDialogDescription>
+                              <AlertDialogDescription>Delete "{product.name}"? This cannot be undone. If it has been ordered before, it will be hidden from the shop instead, so order history stays complete.</AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -389,7 +404,7 @@ export default function AdminProducts() {
                                 <AlertDialogContent>
                                   <AlertDialogHeader>
                                     <AlertDialogTitle>Delete Variant</AlertDialogTitle>
-                                    <AlertDialogDescription>Delete {variant.color} {variant.size} variant?</AlertDialogDescription>
+                                    <AlertDialogDescription>Delete {variant.color} {variant.size} variant? If it has been ordered before, it will be hidden from the shop instead.</AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
