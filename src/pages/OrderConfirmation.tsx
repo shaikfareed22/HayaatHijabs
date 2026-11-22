@@ -62,7 +62,7 @@ export default function OrderConfirmation() {
       <div className="text-center mb-8">
         <CheckCircle className="w-16 h-16 text-primary mx-auto mb-4" />
         <h1 className="text-3xl font-luxury mb-2">Your order has been placed successfully!</h1>
-        <p className="text-muted-foreground">Thank you for shopping with Hayaat Hijabs. We'll notify you when your order ships.</p>
+        <p className="text-muted-foreground">Thank you for shopping with Hayaat Emporium. We'll notify you when your order ships.</p>
       </div>
 
       {/* Order Timeline */}

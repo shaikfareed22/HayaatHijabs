@@ -1,4 +1,4 @@
-# Welcome to your hayaat hijabs
+# Hayaat Emporium
 
 **Deploying:** see [docs/DEPLOY-CLOUDFLARE.md](docs/DEPLOY-CLOUDFLARE.md) — shop and admin portal on Cloudflare Pages, backend on Supabase.
 

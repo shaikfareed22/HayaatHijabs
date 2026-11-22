@@ -14,7 +14,7 @@ const adminEntry = (): Plugin => ({
     handler: (html) =>
       html
         .replace("/src/main.tsx", "/src/admin/main.tsx")
-        .replace(/<title>[\s\S]*?<\/title>/, "<title>Hayaat Hijabs Admin</title>")
+        .replace(/<title>[\s\S]*?<\/title>/, "<title>Hayaat Emporium Admin</title>")
         .replace("</head>", '  <meta name="robots" content="noindex, nofollow" />\n  </head>'),
   },
 });

@@ -71,7 +71,7 @@ const Footer = () => {
 
       {/* Bottom bar */}
       <div className="border-t border-border py-6 text-center text-xs text-muted-foreground">
-        <p>© 2026 Hayaat Hijabs. All rights reserved. Elegance in Every Fold.</p>
+        <p>© 2026 Hayaat Emporium. All rights reserved. Elegance in Every Fold.</p>
       </div>
     </footer>
   );

@@ -14,7 +14,7 @@ const BrandStory = () => {
           >
             <img
               src="https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600&h=700&fit=crop"
-              alt="Hayaat Hijabs craftsmanship"
+              alt="Hayaat Emporium craftsmanship"
               className="rounded-2xl w-full h-auto object-cover shadow-luxury"
               loading="lazy"
             />
@@ -27,7 +27,7 @@ const BrandStory = () => {
             <p className="text-sm tracking-[0.3em] uppercase text-muted-foreground mb-4">Our Story</p>
             <h2 className="font-luxury text-4xl mb-6">Crafted with<br /><span className="italic">Purpose & Love</span></h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              Hayaat Hijabs was born from a passion for empowering women through elegant, 
+              Hayaat Emporium was born from a passion for empowering women through elegant, 
               high-quality modest fashion. We believe every woman deserves to feel beautiful 
               and confident while staying true to her values.
             </p>

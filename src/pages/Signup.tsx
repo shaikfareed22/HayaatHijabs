@@ -39,7 +39,7 @@ export default function Signup() {
         // Not signed in yet: Supabase emailed a confirmation link first.
         setConfirmationSentTo(email);
       } else {
-        toast({ title: 'Account Created!', description: 'Welcome to Hayaat Hijabs!' });
+        toast({ title: 'Account Created!', description: 'Welcome to Hayaat Emporium!' });
         navigate(from, { replace: true });
       }
     } catch (error: any) {
@@ -92,7 +92,7 @@ export default function Signup() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-luxury">Create Account</CardTitle>
-          <p className="text-sm text-muted-foreground">Join Hayaat Hijabs today</p>
+          <p className="text-sm text-muted-foreground">Join Hayaat Emporium today</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

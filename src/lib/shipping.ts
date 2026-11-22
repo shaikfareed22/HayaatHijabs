@@ -1,5 +1,5 @@
 /**
- * Shipping calculation rules for Hayaat Hijabs.
+ * Shipping calculation rules for Hayaat Emporium.
  * Free shipping for orders ≥ ₹999, otherwise ₹60.
  */
 

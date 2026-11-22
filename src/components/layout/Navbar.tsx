@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { useCartContext } from "@/contexts/CartContext";
 import { ADMIN_URL } from "@/lib/siteUrls";
+import logo from "@/assets/logo.png";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -63,9 +64,10 @@ const Navbar = () => {
           </button>
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <h1 className="font-luxury text-2xl md:text-3xl tracking-wider text-foreground">
-              Hayaat <span className="font-light">Hijabs</span>
+          <Link to="/" className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0" aria-label="Hayaat Emporium home">
+            <img src={logo} alt="" className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 object-contain flex-shrink-0" />
+            <h1 className="font-luxury text-base min-[360px]:text-lg sm:text-2xl md:text-3xl sm:tracking-wider text-foreground truncate">
+              Hayaat <span className="font-light">Emporium</span>
             </h1>
           </Link>
 
@@ -87,7 +89,7 @@ const Navbar = () => {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 md:gap-4">
+          <div className="flex items-center gap-1 sm:gap-2 md:gap-4 flex-shrink-0">
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
               className="p-2 hover:text-foreground text-muted-foreground transition-colors"

@@ -91,7 +91,7 @@ export default function Login() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-luxury">Sign In</CardTitle>
-          <p className="text-sm text-muted-foreground">Welcome back to Hayaat Hijabs</p>
+          <p className="text-sm text-muted-foreground">Welcome back to Hayaat Emporium</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

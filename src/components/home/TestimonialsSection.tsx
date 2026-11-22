@@ -16,7 +16,7 @@ const testimonials = [
   },
   {
     name: "Sarah K.",
-    text: "The packaging, the quality, the customer service — everything about Hayaat Hijabs screams luxury. Highly recommend!",
+    text: "The packaging, the quality, the customer service — everything about Hayaat Emporium screams luxury. Highly recommend!",
     rating: 5,
     location: "Toronto, Canada",
   },

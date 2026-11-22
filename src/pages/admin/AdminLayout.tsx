@@ -7,6 +7,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { STORE_URL } from '@/lib/siteUrls';
+import logo from '@/assets/logo.png';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -29,8 +30,8 @@ export default function AdminLayout() {
     <div className="flex h-screen bg-background overflow-hidden">
       <aside className={cn('flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 flex-shrink-0', sidebarOpen ? 'w-64' : 'w-16')}>
         <div className="h-16 flex items-center px-4 border-b border-sidebar-border gap-3">
-          <div className="w-8 h-8 rounded-lg gradient-luxury flex items-center justify-center flex-shrink-0"><Store className="w-4 h-4 text-primary-foreground" /></div>
-          {sidebarOpen && (<div className="overflow-hidden"><p className="font-luxury text-sm font-semibold text-sidebar-foreground leading-tight">Hayaat</p><p className="text-xs text-muted-foreground">Admin Panel</p></div>)}
+          <img src={logo} alt="Hayaat Emporium" className="w-9 h-9 object-contain flex-shrink-0" />
+          {sidebarOpen && (<div className="overflow-hidden"><p className="font-luxury text-sm font-semibold text-sidebar-foreground leading-tight">Hayaat Emporium</p><p className="text-xs text-muted-foreground">Admin Panel</p></div>)}
         </div>
         <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
           {navItems.map(({ to, label, icon: Icon, end }) => (

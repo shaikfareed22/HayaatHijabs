@@ -30,7 +30,7 @@ const shippingSchema = z.object({
 type ShippingAddress = z.infer<typeof shippingSchema>;
 
 const UPI_ID = 'hayaathijabs@upi';
-const MERCHANT_NAME = 'HayaatHijabs';
+const MERCHANT_NAME = 'HayaatEmporium';
 
 export default function Checkout() {
   const navigate = useNavigate();

@@ -1,17 +1,17 @@
-# Deploying Hayaat Hijabs on Cloudflare + Supabase
+# Deploying Hayaat Emporium on Cloudflare + Supabase
 
 ## How it fits together
 
 | Piece | Where | Address (example) | Built with |
 | --- | --- | --- | --- |
-| Shop website | Cloudflare Pages project `hayaat-store` | `hayaathijabs.com` | `npm run build` → `dist` |
-| Admin portal | Cloudflare Pages project `hayaat-admin` | `admin.hayaathijabs.com` | `npm run build:admin` → `dist-admin` |
+| Shop website | Cloudflare Pages project `hayaat-store` | `hayaatemporium.com` | `npm run build` → `dist` |
+| Admin portal | Cloudflare Pages project `hayaat-admin` | `admin.hayaatemporium.com` | `npm run build:admin` → `dist-admin` |
 | Keep-awake job | Cloudflare Worker `hayaat-supabase-keep-alive` | runs daily | `workers/keep-alive/` |
 | Database, login, images, server functions | Supabase (free plan) | `xxxx.supabase.co` | `supabase/` |
 
 Both sites come from this one repository. The admin portal is a separate site: none of its code is in the shop.
 
-Replace `hayaathijabs.com` below with your real domain.
+Replace `hayaatemporium.com` below with your real domain.
 
 ---
 
@@ -64,11 +64,11 @@ This anon key is meant to be public (it is inside the website anyway). Never put
 
 ### 1.6 Login settings
 **Authentication → URL Configuration**
-- **Site URL:** `https://hayaathijabs.com`
+- **Site URL:** `https://hayaatemporium.com`
 - **Redirect URLs** (add each):
-  - `https://hayaathijabs.com/**`
-  - `https://www.hayaathijabs.com/**`
-  - `https://admin.hayaathijabs.com/**`
+  - `https://hayaatemporium.com/**`
+  - `https://www.hayaatemporium.com/**`
+  - `https://admin.hayaatemporium.com/**`
   - `http://localhost:8080/**` and `http://localhost:8081/**` (for testing on your computer)
 
 If a site isn't listed here, Supabase sends its email links (confirm account, reset password) to the Site URL instead, and they won't work properly.
@@ -81,7 +81,7 @@ If a site isn't listed here, Supabase sends its email links (confirm account, re
 1. In [Google Cloud Console](https://console.cloud.google.com/) → **APIs & Services → Credentials → Create credentials → OAuth client ID → Web application**.
 2. **Authorized redirect URIs:** `https://YOUR-PROJECT-REF.supabase.co/auth/v1/callback`
 3. Copy the Client ID and Client secret into Supabase → **Authentication → Sign In / Providers → Google**, and enable it.
-4. To show "Hayaat Hijabs" and your logo on Google's screen: **Google Auth Platform → Branding** — app name, logo, home page, privacy policy, and your domain under authorized domains. Then submit for verification.
+4. To show "Hayaat Emporium" and your logo on Google's screen: **Google Auth Platform → Branding** — app name, logo, home page, privacy policy, and your domain under authorized domains. Then submit for verification.
 
 ### 1.8 Make yourself admin
 1. Sign up on the shop with your email (after Part 2), and confirm it.
@@ -108,12 +108,12 @@ Roles can only be changed this way, or by another admin. The security fix stops 
    | Name | Value |
    | --- | --- |
    | `NODE_VERSION` | `20` |
-   | `VITE_STORE_URL` | `https://hayaathijabs.com` |
-   | `VITE_ADMIN_URL` | `https://admin.hayaathijabs.com` |
+   | `VITE_STORE_URL` | `https://hayaatemporium.com` |
+   | `VITE_ADMIN_URL` | `https://admin.hayaatemporium.com` |
 
    The Supabase settings come from `.env` in the repo, so they don't need adding here.
 4. **Save and Deploy.** Open the `hayaat-store.pages.dev` address it gives you and check the site loads.
-5. **Custom domains → Set up a custom domain:** add `hayaathijabs.com`, then add `www.hayaathijabs.com`. Your DNS is on Cloudflare, so it connects automatically.
+5. **Custom domains → Set up a custom domain:** add `hayaatemporium.com`, then add `www.hayaatemporium.com`. Your DNS is on Cloudflare, so it connects automatically.
 
 No redirect file is needed: Cloudflare Pages already sends links like `/products/abc` to the app.
 
@@ -124,11 +124,11 @@ Repeat Part 2 with the same repository, but:
 - Build command: `npm run build:admin`
 - Build output directory: `dist-admin`
 - Same three environment variables
-- Custom domain: `admin.hayaathijabs.com`
+- Custom domain: `admin.hayaatemporium.com`
 
 The admin site tells search engines not to index it. Every admin action is also checked by the database, so only accounts with the admin role can see or change admin data.
 
-**Optional extra lock (free):** Cloudflare **Zero Trust → Access → Applications → Add → Self-hosted**, domain `admin.hayaathijabs.com`, policy "Allow" for your email(s) only. Cloudflare then asks for a one-time code by email before anyone even sees the admin login page.
+**Optional extra lock (free):** Cloudflare **Zero Trust → Access → Applications → Add → Self-hosted**, domain `admin.hayaatemporium.com`, policy "Allow" for your email(s) only. Cloudflare then asks for a one-time code by email before anyone even sees the admin login page.
 
 ## Part 4 — Keep Supabase awake (Worker)
 

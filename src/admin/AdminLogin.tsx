@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
-import { Store } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { siteUrl } from '@/lib/siteUrls';
+import logo from '@/assets/logo.png';
 import { AdminLoading, NoAdminAccess } from './AdminGuard';
 import { useIsAdmin } from './useIsAdmin';
 
@@ -60,10 +60,8 @@ export default function AdminLogin() {
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-3">
-          <div className="w-10 h-10 mx-auto rounded-lg gradient-luxury flex items-center justify-center">
-            <Store className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <CardTitle className="text-2xl font-luxury">Hayaat Admin</CardTitle>
+          <img src={logo} alt="" className="w-20 h-20 mx-auto object-contain" />
+          <CardTitle className="text-2xl font-luxury">Hayaat Emporium Admin</CardTitle>
           <p className="text-sm text-muted-foreground">Sign in with your admin account</p>
         </CardHeader>
         <CardContent>

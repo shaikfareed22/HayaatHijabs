@@ -1,6 +1,6 @@
 // Addresses of the two sites, used for links between them.
 // Set VITE_STORE_URL and VITE_ADMIN_URL in each Cloudflare Pages project
-// (e.g. https://hayaathijabs.com and https://admin.hayaathijabs.com). Links are hidden when unset.
+// (e.g. https://hayaatemporium.com and https://admin.hayaatemporium.com). Links are hidden when unset.
 const trimSlash = (url: string | undefined) => (url ?? '').trim().replace(/\/+$/, '');
 
 export const STORE_URL = trimSlash(import.meta.env.VITE_STORE_URL);
