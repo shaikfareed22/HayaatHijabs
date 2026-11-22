@@ -285,7 +285,7 @@ export default function AdminProducts() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Products</h1>
-          <p className="text-muted-foreground text-sm mt-1">{products.length} total products</p>
+          <p className="text-muted-foreground text-sm mt-1">{products.length} products · products marked "Live" appear on the website. Change stock under Inventory → Stock.</p>
         </div>
         <Button onClick={openAdd} className="flex items-center gap-2">
           <Plus className="w-4 h-4" /> Add Product
@@ -340,7 +340,7 @@ export default function AdminProducts() {
                           <p className="font-medium">{product.name}</p>
                           {product.is_featured && <Badge variant="secondary" className="text-xs">Featured</Badge>}
                           {hasLowStock && <Badge variant="destructive" className="text-xs"><AlertTriangle className="w-3 h-3 mr-1" />Low Stock</Badge>}
-                          <Badge variant={product.is_active ? 'default' : 'secondary'} className="text-xs">{product.is_active ? 'Active' : 'Inactive'}</Badge>
+                          <Badge variant={product.is_active ? 'default' : 'secondary'} className="text-xs">{product.is_active ? 'Live on website' : 'Hidden'}</Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">{product.categories?.name || 'No category'} • {product.product_variants.length} variants • Stock: {totalStock}</p>
                         {lowestPrice != null && <p className="text-sm font-semibold text-primary">{formatPrice(lowestPrice)}</p>}
@@ -489,7 +489,7 @@ export default function AdminProducts() {
             <div className="flex items-center gap-6">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={form.is_active} onChange={(e) => setForm(f => ({ ...f, is_active: e.target.checked }))} className="rounded" />
-                <span className="text-sm">Active</span>
+                <span className="text-sm">Live on website</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={form.is_featured} onChange={(e) => setForm(f => ({ ...f, is_featured: e.target.checked }))} className="rounded" />

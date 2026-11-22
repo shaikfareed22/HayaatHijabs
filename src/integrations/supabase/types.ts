@@ -193,6 +193,30 @@ export type Database = {
         }
         Relationships: []
       }
+      offline_customers: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          phone: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string | null
@@ -247,12 +271,17 @@ export type Database = {
       }
       orders: {
         Row: {
+          channel: string
           coupon_id: string | null
+          customer_name: string | null
+          customer_phone: string | null
           created_at: string | null
           delivered_date: string | null
           discount_amount: number | null
           id: string
+          offline_customer_id: string | null
           order_status: string | null
+          payment_method: string | null
           payment_status: string | null
           shipped_date: string | null
           shipping_address: Json
@@ -260,15 +289,20 @@ export type Database = {
           total_price: number
           tracking_number: string | null
           updated_at: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
+          channel?: string
           coupon_id?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           created_at?: string | null
           delivered_date?: string | null
           discount_amount?: number | null
           id?: string
+          offline_customer_id?: string | null
           order_status?: string | null
+          payment_method?: string | null
           payment_status?: string | null
           shipped_date?: string | null
           shipping_address: Json
@@ -276,15 +310,20 @@ export type Database = {
           total_price: number
           tracking_number?: string | null
           updated_at?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
+          channel?: string
           coupon_id?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           created_at?: string | null
           delivered_date?: string | null
           discount_amount?: number | null
           id?: string
+          offline_customer_id?: string | null
           order_status?: string | null
+          payment_method?: string | null
           payment_status?: string | null
           shipped_date?: string | null
           shipping_address?: Json
@@ -292,7 +331,7 @@ export type Database = {
           total_price?: number
           tracking_number?: string | null
           updated_at?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -300,6 +339,13 @@ export type Database = {
             columns: ["coupon_id"]
             isOneToOne: false
             referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_offline_customer_id_fkey"
+            columns: ["offline_customer_id"]
+            isOneToOne: false
+            referencedRelation: "offline_customers"
             referencedColumns: ["id"]
           },
         ]
@@ -430,6 +476,7 @@ export type Database = {
           created_at: string
           id: string
           is_active: boolean | null
+          item_code: string | null
           low_stock_threshold: number | null
           price: number
           product_id: string
@@ -447,6 +494,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean | null
+          item_code?: string | null
           low_stock_threshold?: number | null
           price: number
           product_id: string
@@ -464,6 +512,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean | null
+          item_code?: string | null
           low_stock_threshold?: number | null
           price?: number
           product_id?: string
@@ -587,6 +636,72 @@ export type Database = {
           },
         ]
       }
+      stock_movements: {
+        Row: {
+          change: number
+          color: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          order_id: string | null
+          product_name: string | null
+          reason: string
+          size: string | null
+          sku: string | null
+          stock_after: number
+          stock_before: number
+          variant_id: string | null
+        }
+        Insert: {
+          change: number
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          order_id?: string | null
+          product_name?: string | null
+          reason: string
+          size?: string | null
+          sku?: string | null
+          stock_after: number
+          stock_before: number
+          variant_id?: string | null
+        }
+        Update: {
+          change?: number
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          order_id?: string | null
+          product_name?: string | null
+          reason?: string
+          size?: string | null
+          sku?: string | null
+          stock_after?: number
+          stock_before?: number
+          variant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_profiles: {
         Row: {
           address: Json | null
@@ -669,6 +784,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      adjust_stock: {
+        Args: {
+          p_change: number
+          p_note?: string
+          p_reason: string
+          p_variant_id: string
+        }
+        Returns: number
+      }
       calculate_order_total: {
         Args: { order_id_param: string }
         Returns: number
@@ -679,6 +803,15 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      record_store_sale: {
+        Args: {
+          p_customer_name: string
+          p_customer_phone: string
+          p_items: Json
+          p_payment_method: string
+        }
+        Returns: string
       }
     }
     Enums: {

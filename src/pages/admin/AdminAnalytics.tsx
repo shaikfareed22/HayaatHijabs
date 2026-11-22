@@ -8,7 +8,7 @@ import {
   LineChart, Line, CartesianGrid, AreaChart, Area, PieChart, Pie, Cell,
 } from 'recharts';
 import {
-  DollarSign, ShoppingCart, TrendingUp, Users, Package,
+  IndianRupee, ShoppingCart, TrendingUp, Users, Package,
   ArrowUpRight, ArrowDownRight, Zap, Crown, Star,
   CalendarDays, Clock,
 } from 'lucide-react';
@@ -21,7 +21,11 @@ interface OrderRow {
   total_price: number;
   created_at: string;
   order_status: string | null;
-  user_id: string;
+  user_id: string | null;
+  channel?: string | null;
+  customer_name?: string | null;
+  customer_phone?: string | null;
+  offline_customer_id?: string | null;
 }
 
 interface OrderItemRow {
@@ -42,7 +46,7 @@ interface CustomerRow {
 // ────────────────────────────────────────────────────
 // Helpers
 // ────────────────────────────────────────────────────
-const fmt = (v: number) => v >= 1000 ? `$${(v / 1000).toFixed(1)}k` : `$${v.toFixed(0)}`;
+const fmt = (v: number) => v >= 1000 ? `₹${(v / 1000).toFixed(1)}k` : `₹${v.toFixed(0)}`;
 const CHART_COLORS = [
   'hsl(25, 30%, 75%)',   // rose gold
   'hsl(350, 40%, 78%)',  // blush
@@ -91,7 +95,7 @@ export default function AdminAnalytics() {
       const [ordersRes, itemsRes, customersRes] = await Promise.all([
         supabase
           .from('orders')
-          .select('id, total_price, created_at, order_status, user_id')
+          .select('id, total_price, created_at, order_status, user_id, channel, customer_name, customer_phone, offline_customer_id')
           .order('created_at', { ascending: true }),
         supabase
           .from('order_items')
@@ -102,7 +106,16 @@ export default function AdminAnalytics() {
           .eq('role', 'customer')
           .order('created_at', { ascending: true }),
       ]);
-      setOrders(ordersRes.data || []);
+      let orderRows: OrderRow[] = ordersRes.data || [];
+      if (ordersRes.error) {
+        // The in-store sale fields only exist after the inventory database update: fall back without them.
+        const basic = await supabase
+          .from('orders')
+          .select('id, total_price, created_at, order_status, user_id')
+          .order('created_at', { ascending: true });
+        orderRows = basic.data || [];
+      }
+      setOrders(orderRows);
       setOrderItems((itemsRes.data as any) || []);
       setCustomers(customersRes.data || []);
       setLoading(false);
@@ -163,17 +176,22 @@ export default function AdminAnalytics() {
   const topCustomers = useMemo(() => {
     const map: Record<string, { name: string; email: string; totalSpent: number; orderCount: number }> = {};
     orders.forEach(o => {
-      if (!map[o.user_id]) {
-        const c = customers.find(c => c.user_id === o.user_id);
-        map[o.user_id] = {
-          name: c ? [c.first_name, c.last_name].filter(Boolean).join(' ') || 'Customer' : 'Customer',
-          email: c?.email || '',
+      // In-store sales have no website account: group them by the walk-in customer instead.
+      const key = o.offline_customer_id ? `offline:${o.offline_customer_id}` : o.user_id ? `online:${o.user_id}` : null;
+      if (!key) return;
+      if (!map[key]) {
+        const c = o.user_id ? customers.find(c => c.user_id === o.user_id) : undefined;
+        map[key] = {
+          name: o.offline_customer_id
+            ? `${o.customer_name || 'Walk-in customer'} (offline)`
+            : c ? [c.first_name, c.last_name].filter(Boolean).join(' ') || 'Customer' : 'Customer',
+          email: o.offline_customer_id ? o.customer_phone || '' : c?.email || '',
           totalSpent: 0,
           orderCount: 0,
         };
       }
-      map[o.user_id].totalSpent += Number(o.total_price);
-      map[o.user_id].orderCount += 1;
+      map[key].totalSpent += Number(o.total_price);
+      map[key].orderCount += 1;
     });
     return Object.values(map).sort((a, b) => b.totalSpent - a.totalSpent).slice(0, 5);
   }, [orders, customers]);
@@ -235,7 +253,7 @@ export default function AdminAnalytics() {
     }
 
     if (avgOrderValue > 0) {
-      items.push({ icon: Zap, text: `Average order value is $${avgOrderValue.toFixed(2)}`, type: 'info' });
+      items.push({ icon: Zap, text: `Average order value is ₹${avgOrderValue.toFixed(2)}`, type: 'info' });
     }
 
     const pendingOrders = orders.filter(o => o.order_status === 'pending').length;
@@ -250,14 +268,14 @@ export default function AdminAnalytics() {
   const kpiCards = [
     {
       title: 'Total Revenue',
-      value: `$${totalRevenue.toFixed(2)}`,
-      icon: DollarSign,
+      value: `₹${totalRevenue.toFixed(2)}`,
+      icon: IndianRupee,
       sub: 'All time',
       badge: null as string | null,
     },
     {
       title: 'Revenue Today',
-      value: `$${revenueToday.toFixed(2)}`,
+      value: `₹${revenueToday.toFixed(2)}`,
       icon: CalendarDays,
       sub: 'Today',
       badge: null,
@@ -271,7 +289,7 @@ export default function AdminAnalytics() {
     },
     {
       title: 'Revenue This Month',
-      value: `$${revenueThisMonth.toFixed(2)}`,
+      value: `₹${revenueThisMonth.toFixed(2)}`,
       icon: TrendingUp,
       sub: revenueGrowth !== 0 ? `${revenueGrowth > 0 ? '+' : ''}${revenueGrowth.toFixed(0)}% vs last month` : 'Current month',
       badge: revenueGrowth > 0 ? 'up' : revenueGrowth < 0 ? 'down' : null,
@@ -285,8 +303,8 @@ export default function AdminAnalytics() {
     },
     {
       title: 'Avg Order Value',
-      value: `$${avgOrderValue.toFixed(2)}`,
-      icon: DollarSign,
+      value: `₹${avgOrderValue.toFixed(2)}`,
+      icon: IndianRupee,
       sub: 'Per order',
       badge: null,
     },
@@ -394,7 +412,7 @@ export default function AdminAnalytics() {
                   stroke="hsl(var(--muted-foreground))"
                   tickFormatter={v => fmt(v)}
                 />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [name === 'revenue' ? `$${v.toFixed(2)}` : v, name === 'revenue' ? 'Revenue' : 'Orders']} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [name === 'revenue' ? `₹${v.toFixed(2)}` : v, name === 'revenue' ? 'Revenue' : 'Orders']} />
                 <Area type="monotone" dataKey="revenue" stroke="hsl(25, 30%, 75%)" fill="url(#revenueGrad)" strokeWidth={2} />
                 <Line type="monotone" dataKey="orders" stroke="hsl(350, 40%, 78%)" strokeWidth={2} dot={false} yAxisId={0} />
               </AreaChart>
@@ -506,7 +524,7 @@ export default function AdminAnalytics() {
                       <p className="text-sm font-medium text-foreground truncate">{p.name}</p>
                       <p className="text-xs text-muted-foreground">{p.quantity} units sold</p>
                     </div>
-                    <p className="text-sm font-semibold text-foreground">${p.revenue.toFixed(2)}</p>
+                    <p className="text-sm font-semibold text-foreground">₹{p.revenue.toFixed(2)}</p>
                   </div>
                 ))}
               </div>
@@ -538,7 +556,7 @@ export default function AdminAnalytics() {
                       <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
                       <p className="text-xs text-muted-foreground">{c.orderCount} orders • {c.email}</p>
                     </div>
-                    <p className="text-sm font-semibold text-foreground">${c.totalSpent.toFixed(2)}</p>
+                    <p className="text-sm font-semibold text-foreground">₹{c.totalSpent.toFixed(2)}</p>
                   </div>
                 ))}
               </div>

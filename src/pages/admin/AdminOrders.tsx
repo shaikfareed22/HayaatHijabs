@@ -11,6 +11,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, ShoppingCart, Eye, Truck, Package, CheckCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { PAYMENT_LABEL, PaymentMethod } from '@/lib/inventory';
+
+const paymentLabel = (m: string | null | undefined) => (m ? PAYMENT_LABEL[m as PaymentMethod] ?? m : '');
 
 type Order = Tables<'orders'> & {
   order_items: Array<Tables<'order_items'> & {
@@ -90,8 +93,11 @@ export default function AdminOrders() {
   };
 
   const filtered = orders.filter(o => {
-    const matchSearch = o.id.toLowerCase().includes(search.toLowerCase()) ||
-      ((o.shipping_address as any)?.name || '').toLowerCase().includes(search.toLowerCase());
+    const q = search.toLowerCase();
+    const matchSearch = o.id.toLowerCase().includes(q) ||
+      ((o.shipping_address as any)?.name || '').toLowerCase().includes(q) ||
+      (o.customer_name || '').toLowerCase().includes(q) ||
+      (o.customer_phone || '').includes(q);
     const matchStatus = statusFilter === 'all' || o.order_status === statusFilter;
     return matchSearch && matchStatus;
   });
@@ -106,7 +112,7 @@ export default function AdminOrders() {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Search by order ID or customer name..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          <Input placeholder="Search by order ID, customer name or phone..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-48"><SelectValue placeholder="Filter by status" /></SelectTrigger>
@@ -133,7 +139,14 @@ export default function AdminOrders() {
                   <div key={order.id} className="flex flex-col sm:flex-row sm:items-center gap-3 px-6 py-4 hover:bg-muted/30 transition-colors">
                     <div className="flex-1 min-w-0">
                       <p className="font-medium font-mono text-sm">#{order.id.slice(-10).toUpperCase()}</p>
-                      <p className="text-sm text-muted-foreground">{address?.name} • {new Date(order.created_at!).toLocaleDateString()}</p>
+                      <p className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
+                        {order.channel === 'store' ? (
+                          <Badge variant="outline" className="text-xs bg-amber-50 text-amber-800 border-amber-200">Store · {paymentLabel(order.payment_method)}</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs">Online</Badge>
+                        )}
+                        <span>{order.customer_name || address?.name} • {new Date(order.created_at!).toLocaleDateString()}</span>
+                      </p>
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">
                       <Select value={order.order_status || 'pending'} onValueChange={v => updateOrder(order.id, { order_status: v })}>
@@ -222,7 +235,17 @@ export default function AdminOrders() {
                 </Button>
               </div>
 
-              {/* Shipping info */}
+              {/* Shipping info (in-store sales show the walk-in customer instead) */}
+              {selectedOrder.channel === 'store' ? (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-amber-800 mb-2">In-store sale</p>
+                  <div className="text-sm space-y-0.5">
+                    <p className="font-medium">{selectedOrder.customer_name}</p>
+                    <p className="text-muted-foreground">{selectedOrder.customer_phone}</p>
+                    <p>Paid by <strong>{paymentLabel(selectedOrder.payment_method)}</strong></p>
+                  </div>
+                </div>
+              ) : (
               <div className="bg-muted/50 rounded-lg p-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Shipping Address</p>
                 {(() => { const a = selectedOrder.shipping_address as any; return (
@@ -235,6 +258,7 @@ export default function AdminOrders() {
                   </div>
                 )})()}
               </div>
+              )}
 
               {/* Discount / Shipping info */}
               {((selectedOrder as any).discount_amount > 0 || (selectedOrder as any).shipping_amount > 0) && (
