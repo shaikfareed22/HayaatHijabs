@@ -18,10 +18,10 @@ function renderInline(text: string): ReactNode {
     if (/^\*\*[^*]+\*\*$/.test(part)) return <strong key={i} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>;
     if (/^https?:\/\//.test(part)) {
       const label = part.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
-      return <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4 break-all">{label}</a>;
+      return <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-foreground font-medium underline decoration-primary decoration-2 underline-offset-4 hover:text-primary break-all">{label}</a>;
     }
-    if (/^[\w.+-]+@[\w-]+\.[\w.]+$/.test(part)) return <a key={i} href={`mailto:${part}`} className="text-primary underline underline-offset-4">{part}</a>;
-    if (part === STORE_PHONE) return <a key={i} href={`tel:+91${STORE_PHONE}`} className="text-primary underline underline-offset-4">+91 {STORE_PHONE.slice(0, 5)} {STORE_PHONE.slice(5)}</a>;
+    if (/^[\w.+-]+@[\w-]+\.[\w.]+$/.test(part)) return <a key={i} href={`mailto:${part}`} className="text-foreground font-medium underline decoration-primary decoration-2 underline-offset-4 hover:text-primary">{part}</a>;
+    if (part === STORE_PHONE) return <a key={i} href={`tel:+91${STORE_PHONE}`} className="text-foreground font-medium underline decoration-primary decoration-2 underline-offset-4 hover:text-primary">+91 {STORE_PHONE.slice(0, 5)} {STORE_PHONE.slice(5)}</a>;
     return <Fragment key={i}>{part}</Fragment>;
   });
 }
