@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCreateOrder } from '@/hooks/useOrders';
 import { calculateShipping, getFreeShippingThreshold } from '@/lib/shipping';
 import { couponService, type CouponValidation } from '@/services/couponService';
+import { AvailableOffers } from '@/components/checkout/AvailableOffers';
 import { Wallet, ChevronDown, ChevronUp, Tag, X, Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -65,11 +66,12 @@ export default function Checkout() {
   const discountAmount = appliedCoupon?.discount_amount || 0;
   const total = Math.max(0, subtotalNum + shipping - discountAmount);
 
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return;
+  const applyCode = async (codeToApply: string) => {
+    if (!codeToApply.trim()) return;
+    setCouponCode(codeToApply.trim().toUpperCase());
     setCouponLoading(true);
     try {
-      const result = await couponService.validateCoupon(couponCode.trim(), subtotalNum);
+      const result = await couponService.validateCoupon(codeToApply.trim(), subtotalNum);
       setAppliedCoupon(result);
       toast({ title: 'Coupon applied!', description: `You save ₹${result.discount_amount.toFixed(2)}` });
     } catch (err: any) {
@@ -78,6 +80,8 @@ export default function Checkout() {
       setCouponLoading(false);
     }
   };
+
+  const handleApplyCoupon = () => applyCode(couponCode);
 
   const removeCoupon = () => {
     setAppliedCoupon(null);
@@ -308,6 +312,7 @@ export default function Checkout() {
                     </Button>
                   </div>
                 )}
+                {!appliedCoupon && <AvailableOffers subtotal={subtotalNum} applying={couponLoading} onApply={applyCode} />}
               </div>
 
               <Separator />

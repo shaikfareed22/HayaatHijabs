@@ -106,32 +106,17 @@ Deno.serve(async (req) => {
         const coupon_code = sanitizeString(body?.coupon_code, 50)?.toUpperCase()
 
         if (coupon_code) {
-          const { data: coupon, error: couponErr } = await supabaseAdmin
-            .from('coupons')
-            .select('*')
-            .eq('code', coupon_code)
-            .eq('is_active', true)
-            .single()
-
-          if (couponErr || !coupon) {
-            return Response.json({ error: 'Invalid coupon code' }, { status: 400, headers: corsHeaders })
+          // Same rules as the Apply button on the website (dates, limits, members, minimum order,
+          // discount cap). Runs as the customer, so per-customer and member checks apply.
+          const { data: couponCheck, error: couponErr } = await supabaseUser.rpc('validate_coupon', {
+            p_code: coupon_code,
+            p_subtotal: subtotal,
+          })
+          if (couponErr || !couponCheck) {
+            return Response.json({ error: couponErr?.message || 'Invalid coupon code' }, { status: 400, headers: corsHeaders })
           }
-          if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
-            return Response.json({ error: 'Coupon has expired' }, { status: 400, headers: corsHeaders })
-          }
-          if (coupon.usage_limit && coupon.used_count >= coupon.usage_limit) {
-            return Response.json({ error: 'Coupon usage limit reached' }, { status: 400, headers: corsHeaders })
-          }
-          if (coupon.minimum_order_amount && subtotal < Number(coupon.minimum_order_amount)) {
-            return Response.json({ error: `Minimum order amount is ₹${coupon.minimum_order_amount}` }, { status: 400, headers: corsHeaders })
-          }
-
-          if (coupon.discount_type === 'percentage') {
-            discount_amount = Math.round((subtotal * Number(coupon.discount_value) / 100) * 100) / 100
-          } else {
-            discount_amount = Math.min(Number(coupon.discount_value), subtotal)
-          }
-          coupon_id = coupon.id
+          discount_amount = Number((couponCheck as any).discount_amount) || 0
+          coupon_id = (couponCheck as any).coupon_id
         }
 
         const totalPrice = Math.max(0, subtotal + shipping_amount - discount_amount)

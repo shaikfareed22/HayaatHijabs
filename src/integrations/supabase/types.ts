@@ -153,40 +153,61 @@ export type Database = {
       }
       coupons: {
         Row: {
+          allowed_emails: string[] | null
           code: string
           created_at: string | null
+          description: string | null
           discount_type: string
           discount_value: number
           expires_at: string | null
           id: string
           is_active: boolean | null
+          is_public: boolean
+          max_discount_amount: number | null
           minimum_order_amount: number | null
+          per_customer_limit: number | null
+          starts_at: string | null
+          title: string | null
           updated_at: string | null
           usage_limit: number | null
           used_count: number | null
         }
         Insert: {
+          allowed_emails?: string[] | null
           code: string
           created_at?: string | null
+          description?: string | null
           discount_type: string
           discount_value: number
           expires_at?: string | null
           id?: string
           is_active?: boolean | null
+          is_public?: boolean
+          max_discount_amount?: number | null
           minimum_order_amount?: number | null
+          per_customer_limit?: number | null
+          starts_at?: string | null
+          title?: string | null
           updated_at?: string | null
           usage_limit?: number | null
           used_count?: number | null
         }
         Update: {
+          allowed_emails?: string[] | null
           code?: string
           created_at?: string | null
+          description?: string | null
           discount_type?: string
           discount_value?: number
           expires_at?: string | null
           id?: string
           is_active?: boolean | null
+          is_public?: boolean
+          max_discount_amount?: number | null
           minimum_order_amount?: number | null
+          per_customer_limit?: number | null
+          starts_at?: string | null
+          title?: string | null
           updated_at?: string | null
           usage_limit?: number | null
           used_count?: number | null
@@ -803,6 +824,13 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      validate_coupon: {
+        Args: {
+          p_code: string
+          p_subtotal: number
+        }
+        Returns: Json
       }
       record_store_sale: {
         Args: {
