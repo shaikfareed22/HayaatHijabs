@@ -116,24 +116,17 @@ const HeroSection = () => {
 
       {/* Content */}
       <div className="container mx-auto px-4 relative z-10 pointer-events-none">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={banner.id}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-            className="max-w-xl pointer-events-auto"
-          >
+        {/* Keyed on the banner so the text fades in on each slide, without ever disappearing */}
+        <div key={banner.id} className="w-full max-w-xl pointer-events-auto animate-fade-in">
             <p className="text-sm tracking-[0.3em] uppercase text-muted-foreground mb-4">
               Ethnic Wear &amp; Modest Fashion · Hyderabad
             </p>
-            <h1 className="font-luxury text-5xl md:text-7xl leading-tight mb-6 text-foreground">
+            <h1 className="font-luxury text-4xl sm:text-5xl md:text-7xl leading-tight mb-6 text-foreground break-words">
               {titleLines[0]}
               {titleLines[1] && (<><br /><span className="italic">{titleLines.slice(1).join(" ")}</span></>)}
             </h1>
             {banner.subtitle && (
-              <p className="text-lg text-muted-foreground mb-8 max-w-md leading-relaxed">{banner.subtitle}</p>
+              <p className="text-base sm:text-lg text-muted-foreground mb-8 max-w-full sm:max-w-md leading-relaxed break-words">{banner.subtitle}</p>
             )}
             <div className="flex flex-wrap gap-4">
               <Button asChild size="lg" className="tracking-wider uppercase text-xs px-8 py-6 rounded-full">
@@ -145,8 +138,7 @@ const HeroSection = () => {
                 <Link to="/collections">View Collections</Link>
               </Button>
             </div>
-          </motion.div>
-        </AnimatePresence>
+        </div>
       </div>
 
       {/* Dots */}
