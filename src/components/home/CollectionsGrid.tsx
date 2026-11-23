@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import logo from "@/assets/logo.png";
 
 const CollectionsGrid = () => {
   const { data: collections, isLoading } = useQuery({
@@ -67,9 +68,9 @@ const CollectionsGrid = () => {
                 }`}
               >
                 <img
-                  src={collection.image_url || 'https://images.unsplash.com/photo-1614252369475-531eba835eb1?w=600&h=800&fit=crop'}
+                  src={collection.image_url || logo}
                   alt={collection.name}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  className={`w-full h-full transition-transform duration-700 group-hover:scale-105 ${collection.image_url ? "object-cover" : "object-contain p-10 bg-background"}`}
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-foreground/10 to-transparent" />

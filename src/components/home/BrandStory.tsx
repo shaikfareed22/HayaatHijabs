@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ABOUT_PARAGRAPHS, STORE_MAPS_URL } from "@/lib/storefront";
-import bannerEthnic from "@/assets/banner-ethnic.jpg";
+import logo from "@/assets/logo.png";
 
 const BrandStory = () => {
   return (
@@ -13,12 +13,9 @@ const BrandStory = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            <img
-              src={bannerEthnic}
-              alt="Hayaat Emporium ethnic wear"
-              className="rounded-2xl w-full h-auto object-cover shadow-luxury"
-              loading="lazy"
-            />
+            <div className="rounded-2xl bg-background shadow-luxury aspect-square flex items-center justify-center p-10 md:p-14">
+              <img src={logo} alt="Hayaat Emporium" className="w-full h-full object-contain" loading="lazy" />
+            </div>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, x: 30 }}

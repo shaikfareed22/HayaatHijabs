@@ -15,7 +15,7 @@ export function SaleMenuDesktop() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className={`inline-flex items-center gap-1 text-sm tracking-wider uppercase transition-colors hover:text-foreground outline-none ${active ? "text-foreground font-medium" : "text-muted-foreground"}`}
+        className={`inline-flex items-center gap-1 text-sm tracking-wider uppercase font-semibold text-red-600 transition-colors hover:text-red-700 outline-none ${active ? "underline underline-offset-8 decoration-2" : ""}`}
       >
         Sale <ChevronDown className="h-3.5 w-3.5" />
       </DropdownMenuTrigger>
@@ -45,7 +45,7 @@ export function SaleMenuMobile({ onNavigate }: { onNavigate: () => void }) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className={`w-full flex items-center justify-between py-3 px-4 text-sm tracking-wider uppercase rounded-lg transition-colors ${active ? "bg-secondary text-foreground font-medium" : "text-muted-foreground hover:bg-muted"}`}
+        className={`w-full flex items-center justify-between py-3 px-4 text-sm tracking-wider uppercase font-semibold text-red-600 rounded-lg transition-colors ${active ? "bg-secondary" : "hover:bg-muted"}`}
       >
         Sale <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
