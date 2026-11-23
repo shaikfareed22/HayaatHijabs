@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import {
   LayoutDashboard, Package, FolderOpen, ShoppingCart, Users, BarChart3, LogOut, Menu, X, ChevronRight, Store, Tag,
-  Boxes, ScanBarcode, History, Warehouse, ArrowLeftRight,
+  Boxes, ScanBarcode, History, Warehouse, ArrowLeftRight, Image as ImageIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,7 @@ import logo from '@/assets/logo.png';
 // Store Admin = the website and its customers; Inventory Management = products and stock.
 const storeNav = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/banners', label: 'Home Banner', icon: ImageIcon, end: false },
   { to: '/collections', label: 'Collections', icon: FolderOpen, end: false },
   { to: '/orders', label: 'Orders', icon: ShoppingCart, end: false },
   { to: '/coupons', label: 'Coupons', icon: Tag, end: false },

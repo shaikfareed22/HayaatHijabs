@@ -23,6 +23,8 @@ import OrderConfirmation from "./pages/OrderConfirmation";
 import Collections from "./pages/Collections";
 import CollectionDetail from "./pages/CollectionDetail";
 import Wishlist from "./pages/Wishlist";
+import Sale from "./pages/Sale";
+import WhatsAppButton from "@/components/layout/WhatsAppButton";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +34,7 @@ const PublicLayout = ({ children }: { children: React.ReactNode }) => (
     <Navbar />
     <main className="flex-1">{children}</main>
     <Footer />
+    <WhatsAppButton />
   </div>
 );
 
@@ -53,6 +56,8 @@ const App = () => (
               <Route path="/products" element={<PublicLayout><Products /></PublicLayout>} />
               <Route path="/collections" element={<PublicLayout><Collections /></PublicLayout>} />
               <Route path="/collections/:slug" element={<PublicLayout><CollectionDetail /></PublicLayout>} />
+              <Route path="/sale" element={<PublicLayout><Sale /></PublicLayout>} />
+              <Route path="/sale/:slug" element={<PublicLayout><Sale /></PublicLayout>} />
               <Route path="/cart" element={<PublicLayout><Cart /></PublicLayout>} />
               
               {/* Protected user routes */}

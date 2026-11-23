@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { ABOUT_PARAGRAPHS, STORE_MAPS_URL } from "@/lib/storefront";
+import bannerEthnic from "@/assets/banner-ethnic.jpg";
 
 const BrandStory = () => {
   return (
@@ -13,8 +14,8 @@ const BrandStory = () => {
             viewport={{ once: true }}
           >
             <img
-              src="https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600&h=700&fit=crop"
-              alt="Hayaat Emporium craftsmanship"
+              src={bannerEthnic}
+              alt="Hayaat Emporium ethnic wear"
               className="rounded-2xl w-full h-auto object-cover shadow-luxury"
               loading="lazy"
             />
@@ -24,21 +25,16 @@ const BrandStory = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            <p className="text-sm tracking-[0.3em] uppercase text-muted-foreground mb-4">Our Story</p>
-            <h2 className="font-luxury text-4xl mb-6">Crafted with<br /><span className="italic">Purpose & Love</span></h2>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              Hayaat Emporium was born from a passion for empowering women through elegant, 
-              high-quality modest fashion. We believe every woman deserves to feel beautiful 
-              and confident while staying true to her values.
-            </p>
-            <p className="text-muted-foreground leading-relaxed mb-8">
-              Each hijab in our collection is thoughtfully designed using the finest fabrics — 
-              from luxurious silk to breathable organic cotton — ensuring comfort and 
-              elegance in every fold.
-            </p>
-            <Button asChild variant="outline" className="tracking-wider uppercase text-xs px-8 rounded-full">
-              <Link to="/about">Read Our Full Story</Link>
-            </Button>
+            <p className="text-sm tracking-[0.3em] uppercase text-muted-foreground mb-4">About Hayaat Emporium</p>
+            <h2 className="font-luxury text-4xl mb-6">Dress with Grace,<br /><span className="italic">Shine with Confidence</span></h2>
+            {ABOUT_PARAGRAPHS.map((text) => (
+              <p key={text.slice(0, 24)} className="text-muted-foreground leading-relaxed mb-4">{text}</p>
+            ))}
+            <div className="flex flex-wrap gap-3 mt-6">
+              <Button asChild variant="outline" className="tracking-wider uppercase text-xs px-8 rounded-full">
+                <a href={STORE_MAPS_URL} target="_blank" rel="noopener noreferrer">Visit our Hyderabad store</a>
+              </Button>
+            </div>
           </motion.div>
         </div>
       </div>

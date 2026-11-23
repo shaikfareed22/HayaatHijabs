@@ -10,6 +10,8 @@ import { CartDrawer } from "@/components/cart/CartDrawer";
 import { useCartContext } from "@/contexts/CartContext";
 import { ADMIN_URL } from "@/lib/siteUrls";
 import logo from "@/assets/logo.png";
+import { SaleMenuDesktop, SaleMenuMobile } from "@/components/layout/SaleMenu";
+import { ANNOUNCEMENT } from "@/lib/storefront";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -50,7 +52,7 @@ const Navbar = () => {
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
       {/* Top banner */}
       <div className="bg-primary text-primary-foreground text-center py-2 text-xs tracking-widest uppercase font-sans">
-        Free shipping on orders over ₹999 · Elegance delivered to your door
+        {ANNOUNCEMENT}
       </div>
 
       <nav className="container mx-auto px-4">
@@ -86,6 +88,7 @@ const Navbar = () => {
                 {link.name}
               </Link>
             ))}
+            <SaleMenuDesktop />
           </div>
 
           {/* Actions */}
@@ -188,7 +191,8 @@ const Navbar = () => {
                   {link.name}
                 </Link>
               ))}
-              
+              <SaleMenuMobile onNavigate={() => setIsMenuOpen(false)} />
+
               <div className="flex flex-col gap-2 pt-4 border-t border-border mt-2">
                 {user ? (
                   <>

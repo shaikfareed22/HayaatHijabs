@@ -48,7 +48,7 @@ const FeaturedProducts = () => {
           className="text-center mb-12"
         >
           <p className="text-sm tracking-[0.3em] uppercase text-muted-foreground mb-2">Curated Selection</p>
-          <h2 className="font-luxury text-4xl md:text-5xl">Featured Hijabs</h2>
+          <h2 className="font-luxury text-4xl md:text-5xl">Featured Picks</h2>
         </motion.div>
 
         {isLoading && (

@@ -214,6 +214,62 @@ export type Database = {
         }
         Relationships: []
       }
+      home_banners: {
+        Row: {
+          button_text: string | null
+          collection_id: string | null
+          created_at: string
+          display_order: number
+          id: string
+          image_url: string
+          is_active: boolean
+          link_type: string
+          link_url: string | null
+          mobile_image_url: string | null
+          subtitle: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          button_text?: string | null
+          collection_id?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url: string
+          is_active?: boolean
+          link_type?: string
+          link_url?: string | null
+          mobile_image_url?: string | null
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          button_text?: string | null
+          collection_id?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          link_type?: string
+          link_url?: string | null
+          mobile_image_url?: string | null
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "home_banners_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offline_customers: {
         Row: {
           created_at: string
@@ -499,6 +555,7 @@ export type Database = {
           is_active: boolean | null
           item_code: string | null
           low_stock_threshold: number | null
+          on_sale: boolean | null
           price: number
           product_id: string
           requires_shipping: boolean | null
@@ -517,6 +574,7 @@ export type Database = {
           is_active?: boolean | null
           item_code?: string | null
           low_stock_threshold?: number | null
+          on_sale?: boolean | null
           price: number
           product_id: string
           requires_shipping?: boolean | null
@@ -535,6 +593,7 @@ export type Database = {
           is_active?: boolean | null
           item_code?: string | null
           low_stock_threshold?: number | null
+          on_sale?: boolean | null
           price?: number
           product_id?: string
           requires_shipping?: boolean | null
@@ -565,6 +624,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           is_featured: boolean | null
+          is_trending: boolean
           meta_description: string | null
           meta_title: string | null
           name: string
@@ -582,6 +642,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_featured?: boolean | null
+          is_trending?: boolean
           meta_description?: string | null
           meta_title?: string | null
           name: string
@@ -599,6 +660,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_featured?: boolean | null
+          is_trending?: boolean
           meta_description?: string | null
           meta_title?: string | null
           name?: string

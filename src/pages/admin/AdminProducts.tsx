@@ -32,7 +32,7 @@ const COLORS = ['Black', 'White', 'Navy Blue', 'Grey', 'Brown', 'Beige', 'Cream'
 
 const emptyForm = {
   name: '', slug: '', short_description: '', description: '',
-  fabric_type: '', care_instructions: '', is_active: true, is_featured: false,
+  fabric_type: '', care_instructions: '', is_active: true, is_featured: false, is_trending: false,
   category_id: '',
 };
 
@@ -97,6 +97,7 @@ export default function AdminProducts() {
       fabric_type: p.fabric_type || '',
       care_instructions: p.care_instructions || '',
       is_active: p.is_active ?? true,
+      is_trending: p.is_trending ?? false,
       is_featured: p.is_featured ?? false,
       category_id: p.category_id || '',
     });
@@ -152,6 +153,7 @@ export default function AdminProducts() {
       fabric_type: form.fabric_type || null,
       care_instructions: form.care_instructions || null,
       is_active: form.is_active,
+      is_trending: form.is_trending,
       is_featured: form.is_featured,
       category_id: form.category_id || null,
     };
@@ -341,6 +343,7 @@ export default function AdminProducts() {
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-medium">{product.name}</p>
                           {product.is_featured && <Badge variant="secondary" className="text-xs">Featured</Badge>}
+                          {product.is_trending && <Badge variant="outline" className="text-xs border-amber-300 bg-amber-50 text-amber-800">Trending</Badge>}
                           {hasLowStock && <Badge variant="destructive" className="text-xs"><AlertTriangle className="w-3 h-3 mr-1" />Low Stock</Badge>}
                           <Badge variant={product.is_active ? 'default' : 'secondary'} className="text-xs">{product.is_active ? 'Live on website' : 'Hidden'}</Badge>
                         </div>
@@ -504,6 +507,10 @@ export default function AdminProducts() {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={form.is_featured} onChange={(e) => setForm(f => ({ ...f, is_featured: e.target.checked }))} className="rounded" />
                 <span className="text-sm">Featured</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer" title="Shown in the Trending Now row on the home page">
+                <input type="checkbox" checked={form.is_trending} onChange={(e) => setForm(f => ({ ...f, is_trending: e.target.checked }))} className="rounded" />
+                <span className="text-sm">Trending</span>
               </label>
             </div>
           </div>
