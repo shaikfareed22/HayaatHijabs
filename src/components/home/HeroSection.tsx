@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
@@ -87,28 +86,20 @@ const HeroSection = () => {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Background slideshow */}
+      {/* Background slideshow: all images stay mounted and crossfade with CSS, in step with the text */}
       <div className="absolute inset-0">
-        <AnimatePresence mode="sync">
-          <motion.div
-            key={banner.id}
-            initial={{ opacity: 0, scale: 1.04 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.1, ease: "easeOut" }}
-            className="absolute inset-0"
-          >
-            <picture>
-              {banner.mobile_image_url && <source media="(max-width: 767px)" srcSet={banner.mobile_image_url} />}
-              <img
-                src={banner.image_url}
-                alt={banner.title?.replace("\n", " ") || "Hayaat Emporium"}
-                className="w-full h-full object-cover object-center"
-                loading={index === 0 ? "eager" : "lazy"}
-              />
-            </picture>
-          </motion.div>
-        </AnimatePresence>
+        {banners.map((b, i) => (
+          <picture key={b.id}>
+            {b.mobile_image_url && <source media="(max-width: 767px)" srcSet={b.mobile_image_url} />}
+            <img
+              src={b.image_url}
+              alt={b.title?.replace("\n", " ") || "Hayaat Emporium"}
+              className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ease-out ${i === index ? "opacity-100" : "opacity-0"}`}
+              loading={i === 0 ? "eager" : "lazy"}
+              aria-hidden={i !== index}
+            />
+          </picture>
+        ))}
         <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/55 to-background/10" />
         {/* The whole banner is clickable when it has a link */}
         {href && <CtaLink className="absolute inset-0 z-[1]" aria-label={banner.button_text || "Open"}>{null}</CtaLink>}
