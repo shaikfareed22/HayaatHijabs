@@ -24,6 +24,9 @@ import Collections from "./pages/Collections";
 import CollectionDetail from "./pages/CollectionDetail";
 import Wishlist from "./pages/Wishlist";
 import Sale from "./pages/Sale";
+import InfoPage from "./pages/InfoPage";
+import NewArrivals from "./pages/NewArrivals";
+import { routedInfoPages } from "@/content/infoPages";
 import WhatsAppButton from "@/components/layout/WhatsAppButton";
 
 const queryClient = new QueryClient();
@@ -58,6 +61,11 @@ const App = () => (
               <Route path="/collections/:slug" element={<PublicLayout><CollectionDetail /></PublicLayout>} />
               <Route path="/sale" element={<PublicLayout><Sale /></PublicLayout>} />
               <Route path="/sale/:slug" element={<PublicLayout><Sale /></PublicLayout>} />
+              <Route path="/new-arrivals" element={<PublicLayout><NewArrivals /></PublicLayout>} />
+              {routedInfoPages.filter((p) => p.slug !== "new-arrivals").map((p) => (
+                <Route key={p.slug} path={p.path} element={<PublicLayout><InfoPage slug={p.slug} /></PublicLayout>} />
+              ))}
+              <Route path="/guides" element={<PublicLayout><InfoPage slug="style-guides" /></PublicLayout>} />
               <Route path="/cart" element={<PublicLayout><Cart /></PublicLayout>} />
               
               {/* Protected user routes */}

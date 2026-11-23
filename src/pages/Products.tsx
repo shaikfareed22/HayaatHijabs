@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useProducts } from '@/hooks/useProducts';
+import { InfoBlurb } from '@/components/content/InfoBlurb';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -274,6 +275,7 @@ export default function Products() {
           )}
         </div>
       </div>
+      <InfoBlurb slug="shop-all" />
     </div>
   );
 }

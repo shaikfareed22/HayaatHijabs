@@ -4,6 +4,9 @@ export const STORE_PHONE = '8074411944';
 export const STORE_WHATSAPP_URL = `https://wa.me/91${STORE_PHONE}?text=${encodeURIComponent('Hello Hayaat Emporium')}`;
 export const STORE_MAPS_URL = 'https://maps.app.goo.gl/JXzs2Ap8PY4PmA9z7';
 export const STORE_CITY = 'Hyderabad';
+export const STORE_EMAIL = 'hayaatemporium@gmail.com';
+export const INSTAGRAM_HANDLE = '@hayaat_emporium';
+export const INSTAGRAM_URL = 'https://www.instagram.com/hayaat_emporium/';
 
 export const ANNOUNCEMENT = 'Welcome to Hayaat Emporium: Dress with Grace, Shine with Confidence.';
 
